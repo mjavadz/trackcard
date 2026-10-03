@@ -405,9 +405,20 @@
       currentEngine = 'youtube';
       stopAllEngines('youtube');
 
+      function pollDuration() {
+        if (currentEngine !== 'youtube' || !ytPlayer) return;
+        const dur = typeof ytPlayer.getDuration === 'function' ? ytPlayer.getDuration() : 0;
+        if (dur > 0) {
+          totalDurationEl.innerText = formatTime(dur);
+        } else {
+          setTimeout(pollDuration, 350);
+        }
+      }
+
       if (ytPlayer && ytPlayerReady && typeof ytPlayer.loadVideoById === 'function') {
         ytPlayer.loadVideoById(vid);
         ytPlayer.playVideo();
+        setTimeout(pollDuration, 300);
       } else {
         const cont = document.getElementById('hiddenYtPlayer');
         cont.innerHTML = '<div id="ytDivTarget"></div>';
@@ -420,8 +431,7 @@
             'onReady': () => {
               ytPlayerReady = true;
               ytPlayer.playVideo();
-              const dur = ytPlayer.getDuration();
-              if (dur > 0) totalDurationEl.innerText = formatTime(dur);
+              setTimeout(pollDuration, 300);
               startProgressLoop();
             },
             'onStateChange': onYtStateChange
