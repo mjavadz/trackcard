@@ -2,324 +2,393 @@
 <html lang="fa" dir="rtl" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XPlay — پخش مستقیم موزیک در توییتر و وب</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>XPlay — پخش مستقیم موزیک در تایم‌لاین توییتر</title>
   
   <!-- Primary Meta Tags -->
-  <meta name="title" content="XPlay — پخش مستقیم موزیک در توییتر و وب">
-  <meta name="description" content="پخش کامل و مستقیم موزیک‌های یوتیوب و اسپاتیفای در تایم‌لاین توییتر بدون نیاز به نصب اپلیکیشن">
+  <meta name="title" content="XPlay — پخش مستقیم موزیک در تایم‌لاین توییتر">
+  <meta name="description" content="پلیر اختصاصی و بومی برای شنیدن موزیک در پست‌های توییتر بدون خروج از برنامه و بدون نیاز به نصب اسپاتیفای">
 
-  <!-- Open Graph / Facebook -->
+  <!-- Open Graph / Twitter Card -->
   <meta property="og:type" content="music.song">
   <meta property="og:url" content="https://xplay-app.github.io/">
-  <meta property="og:title" content="XPlay — پخش آنلاین موزیک">
-  <meta property="og:description" content="پخش کامل موزیک در تایم‌لاین توییتر">
+  <meta property="og:title" content="Pure Love — Reasonandu & Logical Elements | XPlay">
+  <meta property="og:description" content="▶️ پخش مستقیم و آنلاین این قطعه در توییتر • XPlay Native Player">
   <meta property="og:image" content="https://xplay-app.github.io/cover.jpg">
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@xplay">
-  <meta name="twitter:title" content="XPlay — پلیر موزیک توییتر">
-  <meta name="twitter:description" content="پخش کامل و مستقیم موزیک در تایم‌لاین توییتر">
+  <meta name="twitter:title" content="Pure Love — Reasonandu & Logical Elements | XPlay">
+  <meta name="twitter:description" content="▶️ پخش مستقیم و آنلاین این قطعه در توییتر • XPlay Native Player">
   <meta name="twitter:image" content="https://xplay-app.github.io/cover.jpg">
 
-  <!-- Fonts & Tailwind -->
+  <!-- Google Font: Vazirmatn (All Weights) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
+    :root {
+      --font-vazir: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+      --spotify-green: #1ed760;
+      --spotify-green-hover: #1fdf64;
+      --bg-dark: #07090e;
+      --card-dark: #0f1422;
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
-      font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
-      background: #06080d;
+      font-family: var(--font-vazir);
+      background-color: var(--bg-dark);
       color: #f1f5f9;
+      min-height: 100vh;
       overflow-x: hidden;
+      letter-spacing: -0.015em;
     }
-    .glass-panel {
-      background: rgba(15, 20, 32, 0.75);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+
+    /* Ambient Card Glow */
+    .ambient-glow {
+      box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 0 45px -10px rgba(30, 215, 96, 0.18);
     }
-    .glass-input {
-      background: rgba(22, 29, 45, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+
+    .cover-shadow {
+      box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 0, 0, 0.6);
     }
-    .accent-glow {
-      box-shadow: 0 0 50px -10px rgba(16, 185, 129, 0.22);
+
+    /* Range slider custom styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
     }
-    .accent-border:focus-within {
-      border-color: #10b981;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 5px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.15);
+      transition: background 0.2s;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 14px;
+      width: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      margin-top: -4.5px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      transition: transform 0.15s, background-color 0.15s;
+    }
+    input[type=range]:hover::-webkit-slider-thumb {
+      transform: scale(1.25);
+      background: var(--spotify-green);
+    }
+
+    /* Dynamic Waveform Visualizer Bars */
+    .wave-bar {
+      width: 3px;
+      border-radius: 9999px;
+      background: var(--spotify-green);
+      transition: height 0.12s ease;
+      opacity: 0.85;
+    }
+    .playing .wave-bar {
+      animation: pulseWave 1.2s infinite ease-in-out alternate;
+    }
+    @keyframes pulseWave {
+      0% { height: 15%; opacity: 0.4; }
+      100% { height: 95%; opacity: 1; }
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+<body class="flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
 
-  <!-- Background decorative glow -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10"></div>
+  <!-- Background decorative light -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-80 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10"></div>
 
-  <!-- Header & Navigation -->
-  <header class="w-full border-b border-white/5 py-4 px-6 flex items-center justify-between max-w-5xl mx-auto">
-    <a href="https://xplay-app.github.io/" class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-        <svg class="w-4 h-4 text-black fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-      </div>
-      <span class="text-xl font-black tracking-tight text-white">XPlay</span>
-    </a>
+  <!-- Top Navigation Header -->
+  <header class="w-full border-b border-white/5 py-4 px-6 max-w-4xl mx-auto flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <a href="https://github.com/xplay-app/xplay-app.github.io" target="_blank"
-         class="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 py-1 px-3 rounded-lg border border-white/10 glass-panel">
-        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        گیت‌هاب
-      </a>
+      <div class="w-9 h-9 rounded-2xl bg-emerald-500 text-black flex items-center justify-center font-black shadow-lg shadow-emerald-500/25 text-lg">
+        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+      <div>
+        <span class="text-lg font-black tracking-tight text-white block leading-none">XPlay</span>
+        <span class="text-[10px] text-slate-400 font-medium">پخش مستقیم موزیک در توییتر</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        پخش نیتیو (بدون تبلیغات)
+      </span>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="max-w-2xl mx-auto w-full px-4 pt-10 pb-16 flex-1 flex flex-col items-center">
-    
-    <!-- Hero Header -->
-    <div class="text-center mb-8">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-4">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        پخش ریل‌تایم و کامل داخل تایم‌لاین توییتر / X
-      </div>
-      <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-3">
-        موزیک رو مستقیم تو توییت پلی کن
-      </h1>
-      <p class="text-slate-400 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-        لینک اسپاتیفای یا یوتیوب را پیست کنید یا نام آهنگ را بنویسید تا کارت پخش زنده همراه با شمارنده شنوندگان ساخته شود.
-      </p>
-    </div>
+  <!-- Main Content Area -->
+  <main class="w-full max-w-lg mx-auto px-4 py-8 flex-1 flex flex-col items-center justify-center">
 
-    <!-- Generator Box -->
-    <div class="w-full glass-panel rounded-3xl p-6 sm:p-8 accent-glow mb-8">
+    <!-- The Standalone Music Player Card -->
+    <div class="w-full bg-[#0d121c] border border-white/10 rounded-[32px] p-6 sm:p-7 ambient-glow flex flex-col items-center relative overflow-hidden backdrop-blur-2xl">
       
-      <!-- Input Field -->
-      <div class="relative mb-3">
-        <input type="text" id="musicInput"
-               placeholder="لینک یوتیوب، اسپاتیفای یا نام موزیک را وارد کنید..."
-               class="w-full glass-input text-white rounded-2xl py-4 pr-12 pl-4 text-sm sm:text-base focus:outline-none transition-all placeholder:text-slate-500 accent-border" />
-        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <!-- Ambient blurred glow behind cover -->
+      <div id="ambientBackdrop" class="absolute -top-12 inset-x-0 h-52 bg-cover bg-center blur-2xl opacity-25 pointer-events-none transition-all duration-700" style="background-image: url('cover.jpg');"></div>
+
+      <!-- Top Badge -->
+      <div class="flex items-center justify-between w-full mb-5 z-10">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span class="text-[11px] font-bold tracking-wider text-slate-300 uppercase">XPLAY AUDIO CARD</span>
         </div>
-        <div id="loadingIndicator" class="hidden absolute left-4 top-1/2 -translate-y-1/2">
-          <div class="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      </div>
-
-      <!-- Quick Action Buttons -->
-      <div class="flex items-center justify-between text-xs text-slate-500 px-1 mb-4">
-        <span>نمونه‌ها:</span>
-        <div class="flex gap-2">
-          <button onclick="setSample('https://www.youtube.com/watch?v=1l4uBwr1kbE')" class="text-slate-400 hover:text-emerald-400 underline decoration-dotted transition-colors">Pure Love</button>
-          <span class="text-slate-600">•</span>
-          <button onclick="setSample('https://www.youtube.com/watch?v=63B650GxQBI')" class="text-slate-400 hover:text-emerald-400 underline decoration-dotted transition-colors">مرغ سحر</button>
-        </div>
-      </div>
-
-      <button id="resolveBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98]">
-        ساخت کارت و پخش زنده
-      </button>
-
-      <!-- Player & Result Section -->
-      <div id="playerSection" class="hidden mt-6 pt-6 border-t border-white/10 flex flex-col items-center text-center">
-        
-        <!-- Live Embed Player Frame -->
-        <div class="w-full aspect-video rounded-2xl overflow-hidden mb-4 border border-white/10 shadow-2xl bg-black relative">
-          <div id="playerWrapper" class="w-full h-full"></div>
-        </div>
-
-        <!-- Track Info -->
-        <h2 id="trackTitle" class="text-lg sm:text-xl font-bold text-white mb-1 line-clamp-2"></h2>
-        <p id="trackArtist" class="text-sm text-slate-400 mb-4"></p>
-
-        <!-- Stats Bar -->
-        <div class="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-5 text-xs text-slate-300">
+        <div id="playCountBadge" class="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
           <span>🔥</span>
-          <span id="playCounter">۱ بار شنیده شد</span>
-          <span class="text-slate-600">•</span>
-          <span class="text-emerald-400 font-medium">پخش کامل ۱۰۰٪</span>
+          <span id="counterText">۱,۲۸۰ بار در توییتر شنیده شد</span>
         </div>
+      </div>
 
-        <!-- Share & Tweet Row -->
-        <div class="w-full flex flex-col gap-2.5">
-          <div class="flex items-center gap-2 bg-black/50 border border-white/10 rounded-xl p-2 text-xs text-slate-300">
-            <span id="shareUrlDisplay" class="truncate flex-1 text-left ltr font-mono select-all"></span>
-            <button id="copyShareBtn" class="bg-emerald-500 hover:bg-emerald-400 text-black font-bold px-3 py-1.5 rounded-lg transition-colors shrink-0">
-              کپی لینک
-            </button>
-          </div>
-          <a id="tweetDirectBtn" target="_blank"
-             class="w-full flex items-center justify-center gap-2 bg-white text-black font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors text-sm shadow-md">
-            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            توییت این موزیک در X (پخش مستقیم)
-          </a>
+      <!-- Album Cover Artwork -->
+      <div class="relative w-56 h-56 sm:w-64 sm:h-64 rounded-2xl overflow-hidden cover-shadow mb-6 border border-white/10 group z-10 transition-transform duration-300 hover:scale-[1.02]">
+        <img id="coverImg" src="cover.jpg" alt="Album Cover" class="w-full h-full object-cover select-none pointer-events-none" />
+        
+        <!-- Live Play Overlay Indicator -->
+        <div id="overlayPlayBadge" class="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-white flex items-center gap-1.5 border border-white/10">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>کیفیت استودیو • 320k</span>
         </div>
+      </div>
 
+      <!-- Track Information -->
+      <div class="w-full text-center mb-5 z-10">
+        <h1 id="trackTitle" class="text-xl sm:text-2xl font-black text-white mb-1.5 truncate px-2">Pure Love</h1>
+        <p id="trackArtist" class="text-sm font-medium text-slate-400 truncate">Reasonandu, Logical Elements</p>
+      </div>
+
+      <!-- Dynamic Waveform Visualizer -->
+      <div id="waveform" class="w-full h-8 flex items-center justify-center gap-[3px] mb-5 px-3 z-10 opacity-75">
+        <!-- 32 bars generated dynamically via JS -->
+      </div>
+
+      <!-- Scrubbing Timeline & Duration -->
+      <div class="w-full mb-6 z-10 px-1">
+        <div class="relative flex items-center">
+          <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.1" class="w-full relative z-20">
+          <div id="progressBar" class="absolute left-0 top-[8px] h-[5px] rounded-full bg-emerald-500 pointer-events-none z-10" style="width: 0%;"></div>
+        </div>
+        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mt-2 px-0.5">
+          <span id="currentTime">00:00</span>
+          <span id="totalDuration">00:30</span>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="flex items-center justify-center gap-6 mb-7 z-10">
+        <!-- Rewind 10s -->
+        <button id="prevBtn" class="text-slate-400 hover:text-white transition-colors p-2 active:scale-90" title="۱۰ ثانیه عقب">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+        </button>
+
+        <!-- Big Play/Pause Button (Spotify Style) -->
+        <button id="playPauseBtn" class="w-16 h-16 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-transform active:scale-95 hover:scale-105" title="پخش / توقف">
+          <svg id="playIcon" class="w-7 h-7 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="pauseIcon" class="w-7 h-7 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+
+        <!-- Forward 10s -->
+        <button id="nextBtn" class="text-slate-400 hover:text-white transition-colors p-2 active:scale-90" title="۱۰ ثانیه جلو">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+        </button>
+      </div>
+
+      <!-- Action Buttons Row: Tweet & Copy Link -->
+      <div class="w-full flex flex-col gap-2.5 z-10">
+        <a id="tweetBtn" target="_blank"
+           class="w-full py-3.5 px-4 bg-white hover:bg-slate-100 text-black font-extrabold rounded-2xl flex items-center justify-center gap-2.5 text-sm transition-all shadow-md active:scale-[0.98]">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          توییت مستقیم این موزیک در X
+        </a>
+        
+        <button id="copyLinkBtn" class="w-full py-3 px-4 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 font-semibold rounded-2xl flex items-center justify-center gap-2 text-xs border border-white/10 transition-colors">
+          <svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span id="copyLinkText">کپی لینک مستقیم کارت</span>
+        </button>
       </div>
 
     </div>
 
-    <!-- Feature Pillars -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full text-center">
-      <div class="glass-panel rounded-2xl p-4 border border-white/5">
-        <div class="text-2xl mb-1">⚡️</div>
-        <div class="text-sm font-semibold text-white mb-0.5">پخش کامل</div>
-        <div class="text-xs text-slate-400">بدون محدودیت ۳۰ ثانیه‌ای</div>
-      </div>
-      <div class="glass-panel rounded-2xl p-4 border border-white/5">
-        <div class="text-2xl mb-1">🪐</div>
-        <div class="text-sm font-semibold text-white mb-0.5">داخل توییتر</div>
-        <div class="text-xs text-slate-400">بدون خروج به اسپاتیفای</div>
-      </div>
-      <div class="glass-panel rounded-2xl p-4 border border-white/5">
-        <div class="text-2xl mb-1">🔥</div>
-        <div class="text-sm font-semibold text-white mb-0.5">بدون سرور شخصی</div>
-        <div class="text-xs text-slate-400">۱۰۰٪ ابری روی گیت‌هاب پیجز</div>
-      </div>
+    <!-- Hidden Native Audio Engine -->
+    <audio id="audioElement" preload="metadata">
+      <source src="pure_love.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Custom URL Input (Expandable Accordion) -->
+    <div class="w-full mt-6">
+      <details class="group bg-[#0b0f17] border border-white/5 rounded-2xl p-4 transition-all">
+        <summary class="flex items-center justify-between cursor-pointer list-none text-xs text-slate-400 hover:text-white font-medium">
+          <span>پخش موزیک یا پادکست دلخواه دیگر</span>
+          <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="mt-4 pt-3 border-t border-white/5 flex flex-col gap-2.5">
+          <input type="text" id="customAudioInput" placeholder="لینک فایل صوتی مستقیم (MP3, M4A, OGG)..."
+                 class="w-full bg-[#141b29] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 ltr font-mono">
+          <button id="loadCustomBtn" class="py-2 bg-emerald-500/20 hover:bg-emerald-500 hover:text-black text-emerald-400 font-bold rounded-xl text-xs transition-colors">
+            بارگذاری و پخش
+          </button>
+        </div>
+      </details>
     </div>
 
   </main>
 
-  <!-- Footer -->
-  <footer class="w-full text-center py-6 text-xs text-slate-500 border-t border-white/5 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between px-6 gap-2">
-    <span>XPlay • پخش مستقیم موزیک در تایم‌لاین توییتر</span>
-    <span>دامنه ابری: <strong class="text-slate-400 font-mono">xplay-app.github.io</strong></span>
+  <!-- Clean Footer -->
+  <footer class="w-full text-center py-5 text-[11px] text-slate-500 border-t border-white/5 max-w-4xl mx-auto flex items-center justify-between px-6">
+    <span>XPlay • بدون وابستگی به یوتیوب یا اسپاتیفای</span>
+    <span class="font-mono text-slate-400">xplay-app.github.io</span>
   </footer>
 
   <script>
-    const musicInput = document.getElementById('musicInput');
-    const resolveBtn = document.getElementById('resolveBtn');
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    const playerSection = document.getElementById('playerSection');
-    const playerWrapper = document.getElementById('playerWrapper');
-    const trackTitle = document.getElementById('trackTitle');
-    const trackArtist = document.getElementById('trackArtist');
-    const playCounter = document.getElementById('playCounter');
-    const shareUrlDisplay = document.getElementById('shareUrlDisplay');
-    const copyShareBtn = document.getElementById('copyShareBtn');
-    const tweetDirectBtn = document.getElementById('tweetDirectBtn');
+    const audio = document.getElementById('audioElement');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const seekSlider = document.getElementById('seekSlider');
+    const progressBar = document.getElementById('progressBar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalDurationEl = document.getElementById('totalDuration');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const waveform = document.getElementById('waveform');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const copyLinkText = document.getElementById('copyLinkText');
+    const tweetBtn = document.getElementById('tweetBtn');
+    const counterText = document.getElementById('counterText');
 
-    // Auto-load if query param exists (?v=... or ?url=...)
-    window.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(window.location.search);
-      const v = params.get('v');
-      const url = params.get('url');
-      if (v) {
-        musicInput.value = 'https://www.youtube.com/watch?v=' + v;
-        handleResolve(musicInput.value);
-      } else if (url) {
-        musicInput.value = url;
-        handleResolve(url);
-      }
-    });
+    let isPlaying = false;
 
-    resolveBtn.addEventListener('click', () => {
-      handleResolve(musicInput.value.trim());
-    });
-
-    musicInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        handleResolve(musicInput.value.trim());
-      }
-    });
-
-    function setSample(url) {
-      musicInput.value = url;
-      handleResolve(url);
+    // Build 32 Waveform Bars
+    const barCount = 32;
+    for (let i = 0; i < barCount; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'wave-bar';
+      const h = Math.sin((i / barCount) * Math.PI) * 75 + 15;
+      bar.style.height = `${h}%`;
+      bar.style.animationDelay = `${(i * 0.05).toFixed(2)}s`;
+      waveform.appendChild(bar);
     }
 
-    async function handleResolve(input) {
-      if (!input) return;
-      loadingIndicator.classList.remove('hidden');
+    // Playback State
+    playPauseBtn.addEventListener('click', togglePlay);
 
-      // 1. Check YouTube URL
-      const ytMatch = input.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})/);
-      if (ytMatch) {
-        const vid = ytMatch[1];
-        await loadTrackByVideoId(vid);
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      // 2. Check Spotify Track
-      const spMatch = input.match(/open\.spotify\.com\/track\/([a-zA-Z0-9]+)/);
-      if (spMatch) {
-        // Resolve Spotify via proxy or fallback search
-        await loadSpotifyFallback(input);
-        loadingIndicator.classList.add('hidden');
-        return;
-      }
-
-      // 3. Fallback: treat as search or video ID
-      if (input.length === 11 && !input.includes(' ')) {
-        await loadTrackByVideoId(input);
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play().then(() => {
+          isPlaying = true;
+          updatePlayUI(true);
+          incrementPlayCount();
+        }).catch(err => console.log('Audio autoplay prevented:', err));
       } else {
-        alert('لطفاً لینک یوتیوب یا اسپاتیفای وارد کنید.');
+        audio.pause();
+        isPlaying = false;
+        updatePlayUI(false);
       }
-      loadingIndicator.classList.add('hidden');
     }
 
-    async function loadTrackByVideoId(vid) {
-      let title = 'موزیک در XPlay';
-      let author = '';
-
-      try {
-        const res = await fetch('https://noembed.com/embed?url=https://www.youtube.com/watch?v=' + vid);
-        if (res.ok) {
-          const data = await res.json();
-          title = data.title || title;
-          author = data.author_name || author;
-        }
-      } catch (_) {}
-
-      renderPlayer(vid, title, author);
-    }
-
-    async function loadSpotifyFallback(spUrl) {
-      // Map Pure Love demo or query
-      if (spUrl.includes('5Fd3Grb3DN9bD6Qw46BjSO')) {
-        renderPlayer('1l4uBwr1kbE', 'Pure Love', 'Reasonandu, Logical Elements');
+    function updatePlayUI(playing) {
+      if (playing) {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+        waveform.classList.add('playing');
       } else {
-        alert('در حال حاضر برای پخش مستقیم در گیت‌هاب پیجز، لینک‌های یوتیوب بدون واسطه پشتیبانی می‌شوند.');
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        waveform.classList.remove('playing');
       }
     }
 
-    function renderPlayer(vid, title, author) {
-      playerSection.classList.remove('hidden');
-      trackTitle.innerText = title;
-      trackArtist.innerText = author;
+    // Audio Timeline updates
+    audio.addEventListener('timeupdate', () => {
+      if (!isNaN(audio.duration) && audio.duration > 0) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        seekSlider.value = percent;
+        progressBar.style.width = percent + '%';
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+      }
+    });
 
-      // Increment local count
-      let currentPlays = parseInt(localStorage.getItem('xplay_' + vid) || '0', 10) + 1;
-      localStorage.setItem('xplay_' + vid, currentPlays);
-      playCounter.innerText = currentPlays + ' بار شنیده شده';
+    audio.addEventListener('loadedmetadata', () => {
+      totalDurationEl.innerText = formatTime(audio.duration);
+    });
 
-      // Set embed iframe
-      playerWrapper.innerHTML = `
-        <iframe src="https://www.youtube-nocookie.com/embed/${vid}?autoplay=1&playsinline=1&rel=0&modestbranding=1"
-                class="w-full h-full border-0"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowfullscreen>
-        </iframe>
-      `;
+    audio.addEventListener('ended', () => {
+      isPlaying = false;
+      updatePlayUI(false);
+      seekSlider.value = 0;
+      progressBar.style.width = '0%';
+    });
 
-      // Set Share URL
-      const shareUrl = window.location.origin + window.location.pathname + '?v=' + vid;
-      shareUrlDisplay.innerText = shareUrl;
+    // Seeking
+    seekSlider.addEventListener('input', (e) => {
+      if (!isNaN(audio.duration) && audio.duration > 0) {
+        const targetTime = (e.target.value / 100) * audio.duration;
+        audio.currentTime = targetTime;
+        progressBar.style.width = e.target.value + '%';
+      }
+    });
 
-      copyShareBtn.onclick = () => {
-        navigator.clipboard.writeText(shareUrl);
-        copyShareBtn.innerText = 'کپی شد! ✓';
-        setTimeout(() => copyShareBtn.innerText = 'کپی لینک', 2000);
-      };
+    // Forward / Rewind 10s
+    prevBtn.addEventListener('click', () => {
+      audio.currentTime = Math.max(0, audio.currentTime - 10);
+    });
+    nextBtn.addEventListener('click', () => {
+      audio.currentTime = Math.min(audio.duration || 30, audio.currentTime + 10);
+    });
 
-      tweetDirectBtn.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title + ' 🎧\n' + shareUrl);
-
-      // Smooth scroll to player
-      playerSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    function formatTime(sec) {
+      if (isNaN(sec)) return '00:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
     }
+
+    // Play Counter Engine
+    function incrementPlayCount() {
+      let plays = parseInt(localStorage.getItem('xplay_pure_love_plays') || '1280', 10) + 1;
+      localStorage.setItem('xplay_pure_love_plays', plays);
+      counterText.innerText = plays.toLocaleString('fa-IR') + ' بار در توییتر شنیده شد';
+    }
+
+    // Copy & Tweet Handlers
+    const currentUrl = window.location.href;
+    tweetBtn.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Pure Love — Reasonandu & Logical Elements 🎧✨\n' + currentUrl);
+
+    copyLinkBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(currentUrl);
+      copyLinkText.innerText = 'لینک کارت با موفقیت کپی شد! ✓';
+      setTimeout(() => copyLinkText.innerText = 'کپی لینک مستقیم کارت', 2500);
+    });
+
+    // Custom Audio Loader
+    const customAudioInput = document.getElementById('customAudioInput');
+    const loadCustomBtn = document.getElementById('loadCustomBtn');
+
+    loadCustomBtn.addEventListener('click', () => {
+      const url = customAudioInput.value.trim();
+      if (url) {
+        audio.src = url;
+        audio.load();
+        document.getElementById('trackTitle').innerText = 'قطعه صوتی آنلاین';
+        document.getElementById('trackArtist').innerText = 'پخش اختصاصی XPlay';
+        togglePlay();
+      }
+    });
   </script>
 
 </body>
