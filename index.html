@@ -12,14 +12,14 @@
   <!-- Open Graph / Twitter Card -->
   <meta property="og:type" content="music.song">
   <meta property="og:url" content="https://xplay-app.github.io/">
-  <meta property="og:title" content="Pure Love — Reasonandu & Logical Elements | XPlay">
-  <meta property="og:description" content="▶️ پخش مستقیم و آنلاین این قطعه در توییتر • XPlay Native Player">
+  <meta property="og:title" content="XPlay — پلیر آنلاین موزیک برای توییتر">
+  <meta property="og:description" content="▶️ پخش مستقیم و آنلاین موزیک در تایم‌لاین توییتر • XPlay Native Player">
   <meta property="og:image" content="https://xplay-app.github.io/cover.jpg">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@xplay">
-  <meta name="twitter:title" content="Pure Love — Reasonandu & Logical Elements | XPlay">
-  <meta name="twitter:description" content="▶️ پخش مستقیم و آنلاین این قطعه در توییتر • XPlay Native Player">
+  <meta name="twitter:title" content="XPlay — پلیر آنلاین موزیک برای توییتر">
+  <meta name="twitter:description" content="▶️ پخش مستقیم و آنلاین موزیک در تایم‌لاین توییتر • XPlay Native Player">
   <meta name="twitter:image" content="https://xplay-app.github.io/cover.jpg">
 
   <!-- Google Font: Vazirmatn (All Weights) -->
@@ -28,6 +28,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- External Streaming Engine APIs -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="https://w.soundcloud.com/player/api.js"></script>
 
   <style>
     :root {
@@ -149,7 +153,7 @@
       <div class="flex items-center justify-between w-full mb-5 z-10">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span class="text-[11px] font-bold tracking-wider text-slate-300 uppercase">XPLAY AUDIO CARD</span>
+          <span id="playerEngineBadge" class="text-[11px] font-bold tracking-wider text-slate-300 uppercase">XPLAY AUDIO CARD</span>
         </div>
         <div id="playCountBadge" class="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
           <span>🔥</span>
@@ -200,8 +204,8 @@
 
         <!-- Big Play/Pause Button (Spotify Style with Centered Icon) -->
         <button id="playPauseBtn" class="w-16 h-16 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-transform active:scale-95 hover:scale-105" title="پخش / توقف">
-          <svg id="playIcon" class="w-7 h-7 block" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="8.5,5.5 17.5,12 8.5,18.5" />
+          <svg id="playIcon" class="w-7 h-7 block" viewBox="0 0 22 22" fill="currentColor">
+            <polygon points="6.5,5 15.5,11 6.5,17" />
           </svg>
           <svg id="pauseIcon" class="w-7 h-7 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </button>
@@ -228,10 +232,12 @@
 
     </div>
 
-    <!-- Hidden Native Audio Engine -->
+    <!-- Hidden Multi-Engine Audio Containers -->
     <audio id="audioElement" preload="metadata">
       <source src="pure_love.mp3" type="audio/mpeg">
     </audio>
+    <div id="hiddenYtPlayer" style="position:fixed; bottom:-9999px; left:-9999px; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
+    <div id="hiddenScPlayer" style="position:fixed; bottom:-9999px; left:-9999px; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
 
     <!-- SECTION 1: Convert Music Link (Spotify, YouTube, SoundCloud) -->
     <div class="w-full bg-[#0f1422] border border-white/10 rounded-3xl p-5 mb-5 shadow-lg">
@@ -312,7 +318,18 @@
   </footer>
 
   <script>
-    const audio = document.getElementById('audioElement');
+    // ----------------------------------------------------
+    // XPlay Multi-Engine Audio Architecture
+    // Supports: 1) Native HTML5 Audio 2) YouTube 3) SoundCloud
+    // ----------------------------------------------------
+    const nativeAudio = document.getElementById('audioElement');
+    let ytPlayer = null;
+    let ytPlayerReady = false;
+    let scWidget = null;
+    let currentEngine = 'native'; // 'native' | 'youtube' | 'soundcloud'
+    let isPlaying = false;
+    let progressTimer = null;
+
     const playPauseBtn = document.getElementById('playPauseBtn');
     const playIcon = document.getElementById('playIcon');
     const pauseIcon = document.getElementById('pauseIcon');
@@ -332,6 +349,7 @@
     const trackTitle = document.getElementById('trackTitle');
     const trackArtist = document.getElementById('trackArtist');
     const audioQualityTag = document.getElementById('audioQualityTag');
+    const playerEngineBadge = document.getElementById('playerEngineBadge');
 
     const linkConvertInput = document.getElementById('linkConvertInput');
     const convertLinkBtn = document.getElementById('convertLinkBtn');
@@ -342,9 +360,7 @@
     const directAudioUrl = document.getElementById('directAudioUrl');
     const loadDirectBtn = document.getElementById('loadDirectBtn');
 
-    let isPlaying = false;
-
-    // 1. Build 32 Waveform Bars
+    // Build 32 Waveform Bars
     const barCount = 32;
     for (let i = 0; i < barCount; i++) {
       const bar = document.createElement('div');
@@ -355,20 +371,80 @@
       waveform.appendChild(bar);
     }
 
-    // 2. Playback State Handlers
-    playPauseBtn.addEventListener('click', togglePlay);
+    // YouTube API Global Hook
+    window.onYouTubeIframeAPIReady = function() {
+      ytPlayer = new YT.Player('hiddenYtPlayer', {
+        height: '1',
+        width: '1',
+        playerVars: { playsinline: 1, controls: 0, disablekb: 1 },
+        events: {
+          'onReady': () => { ytPlayerReady = true; },
+          'onStateChange': onYtStateChange
+        }
+      });
+    };
 
-    function togglePlay() {
-      if (audio.paused) {
-        audio.play().then(() => {
-          isPlaying = true;
-          updatePlayUI(true);
-          incrementPlayCount();
-        }).catch(err => console.log('Autoplay policy prevented audio:', err));
-      } else {
-        audio.pause();
+    function onYtStateChange(event) {
+      if (currentEngine !== 'youtube') return;
+      if (event.data === YT.PlayerState.PLAYING) {
+        isPlaying = true;
+        updatePlayUI(true);
+        startProgressLoop();
+      } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
         isPlaying = false;
         updatePlayUI(false);
+        stopProgressLoop();
+      }
+    }
+
+    // Master Play/Pause Controller
+    playPauseBtn.addEventListener('click', toggleMasterPlay);
+
+    function toggleMasterPlay() {
+      if (currentEngine === 'native') {
+        if (nativeAudio.paused) {
+          stopAllEngines('native');
+          nativeAudio.play().then(() => {
+            isPlaying = true;
+            updatePlayUI(true);
+            incrementPlayCount();
+          }).catch(e => console.log('Native audio play error:', e));
+        } else {
+          nativeAudio.pause();
+          isPlaying = false;
+          updatePlayUI(false);
+        }
+      } else if (currentEngine === 'youtube') {
+        if (!ytPlayer || !ytPlayerReady) return;
+        const state = ytPlayer.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+          ytPlayer.pauseVideo();
+        } else {
+          stopAllEngines('youtube');
+          ytPlayer.playVideo();
+          incrementPlayCount();
+        }
+      } else if (currentEngine === 'soundcloud') {
+        if (!scWidget) return;
+        scWidget.isPaused((paused) => {
+          if (paused) {
+            stopAllEngines('soundcloud');
+            scWidget.play();
+            incrementPlayCount();
+          } else {
+            scWidget.pause();
+          }
+        });
+      }
+    }
+
+    function stopAllEngines(except = '') {
+      if (except !== 'native') nativeAudio.pause();
+      if (except !== 'youtube' && ytPlayer && ytPlayerReady && typeof ytPlayer.pauseVideo === 'function') {
+        try { ytPlayer.pauseVideo(); } catch(_) {}
+      }
+      if (except !== 'soundcloud' && scWidget) {
+        try { scWidget.pause(); } catch(_) {}
       }
     }
 
@@ -384,46 +460,94 @@
       }
     }
 
-    // 3. Audio Progress & Timeline Updates
-    audio.addEventListener('timeupdate', () => {
-      if (!isNaN(audio.duration) && audio.duration > 0) {
-        const percent = (audio.currentTime / audio.duration) * 100;
+    // Unified Progress Poller for YouTube & SoundCloud
+    function startProgressLoop() {
+      stopProgressLoop();
+      progressTimer = setInterval(() => {
+        if (currentEngine === 'youtube' && ytPlayer && ytPlayerReady) {
+          const cur = ytPlayer.getCurrentTime() || 0;
+          const dur = ytPlayer.getDuration() || 0;
+          if (dur > 0) {
+            seekSlider.value = (cur / dur) * 100;
+            progressBar.style.width = (cur / dur) * 100 + '%';
+            currentTimeEl.innerText = formatTime(cur);
+            totalDurationEl.innerText = formatTime(dur);
+          }
+        }
+      }, 250);
+    }
+
+    function stopProgressLoop() {
+      if (progressTimer) clearInterval(progressTimer);
+      progressTimer = null;
+    }
+
+    // Native Audio Timeline events
+    nativeAudio.addEventListener('timeupdate', () => {
+      if (currentEngine === 'native' && !isNaN(nativeAudio.duration) && nativeAudio.duration > 0) {
+        const percent = (nativeAudio.currentTime / nativeAudio.duration) * 100;
         seekSlider.value = percent;
         progressBar.style.width = percent + '%';
-        currentTimeEl.innerText = formatTime(audio.currentTime);
+        currentTimeEl.innerText = formatTime(nativeAudio.currentTime);
       }
     });
 
-    audio.addEventListener('loadedmetadata', () => {
-      totalDurationEl.innerText = formatTime(audio.duration);
+    nativeAudio.addEventListener('loadedmetadata', () => {
+      if (currentEngine === 'native') totalDurationEl.innerText = formatTime(nativeAudio.duration);
     });
 
-    audio.addEventListener('ended', () => {
-      isPlaying = false;
-      updatePlayUI(false);
-      seekSlider.value = 0;
-      progressBar.style.width = '0%';
+    nativeAudio.addEventListener('ended', () => {
+      if (currentEngine === 'native') {
+        isPlaying = false;
+        updatePlayUI(false);
+        seekSlider.value = 0;
+        progressBar.style.width = '0%';
+      }
     });
 
-    // Seeking
+    // Seeking on Timeline
     seekSlider.addEventListener('input', (e) => {
-      if (!isNaN(audio.duration) && audio.duration > 0) {
-        const targetTime = (e.target.value / 100) * audio.duration;
-        audio.currentTime = targetTime;
-        progressBar.style.width = e.target.value + '%';
+      const pct = parseFloat(e.target.value) / 100;
+      progressBar.style.width = (pct * 100) + '%';
+
+      if (currentEngine === 'native' && !isNaN(nativeAudio.duration)) {
+        nativeAudio.currentTime = pct * nativeAudio.duration;
+      } else if (currentEngine === 'youtube' && ytPlayer && ytPlayerReady) {
+        const dur = ytPlayer.getDuration() || 0;
+        ytPlayer.seekTo(pct * dur, true);
+      } else if (currentEngine === 'soundcloud' && scWidget) {
+        scWidget.getDuration((durMs) => {
+          scWidget.seekTo(pct * durMs);
+        });
       }
     });
 
     // Forward / Rewind 10s
     prevBtn.addEventListener('click', () => {
-      audio.currentTime = Math.max(0, audio.currentTime - 10);
+      if (currentEngine === 'native') {
+        nativeAudio.currentTime = Math.max(0, nativeAudio.currentTime - 10);
+      } else if (currentEngine === 'youtube' && ytPlayer && ytPlayerReady) {
+        const cur = ytPlayer.getCurrentTime() || 0;
+        ytPlayer.seekTo(Math.max(0, cur - 10), true);
+      } else if (currentEngine === 'soundcloud' && scWidget) {
+        scWidget.getPosition((posMs) => scWidget.seekTo(Math.max(0, posMs - 10000)));
+      }
     });
+
     nextBtn.addEventListener('click', () => {
-      audio.currentTime = Math.min(audio.duration || 30, audio.currentTime + 10);
+      if (currentEngine === 'native') {
+        nativeAudio.currentTime = Math.min(nativeAudio.duration || 30, nativeAudio.currentTime + 10);
+      } else if (currentEngine === 'youtube' && ytPlayer && ytPlayerReady) {
+        const cur = ytPlayer.getCurrentTime() || 0;
+        const dur = ytPlayer.getDuration() || 30;
+        ytPlayer.seekTo(Math.min(dur, cur + 10), true);
+      } else if (currentEngine === 'soundcloud' && scWidget) {
+        scWidget.getPosition((posMs) => scWidget.seekTo(posMs + 10000));
+      }
     });
 
     function formatTime(sec) {
-      if (isNaN(sec)) return '00:00';
+      if (isNaN(sec) || sec <= 0) return '00:00';
       const m = Math.floor(sec / 60);
       const s = Math.floor(sec % 60);
       return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
@@ -436,8 +560,8 @@
       counterText.innerText = plays.toLocaleString('fa-IR') + ' بار در توییتر شنیده شد';
     }
 
-    // 4. Update Card Content & Tweet Links
-    function updateCardData(title, artist, coverUrl, quality = 'استودیو • 320k', shareParam = '') {
+    // Update Visuals & Tweet Link
+    function updateCardVisuals(title, artist, coverUrl, quality = 'استودیو • 320k', shareParam = '') {
       trackTitle.innerText = title;
       trackArtist.innerText = artist;
       audioQualityTag.innerText = quality;
@@ -447,7 +571,6 @@
         ambientBackdrop.style.backgroundImage = `url('${coverUrl}')`;
       }
 
-      // Update Tweet Link
       const shareUrl = shareParam ? `${window.location.origin}${window.location.pathname}?url=${encodeURIComponent(shareParam)}` : window.location.href;
       tweetBtn.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(`${title} — ${artist} 🎧✨\n${shareUrl}`);
       
@@ -458,14 +581,16 @@
       };
     }
 
-    // Initial setup of copy button
+    // Setup initial copy handler
     copyLinkBtn.onclick = () => {
       navigator.clipboard.writeText(window.location.href);
       copyLinkText.innerText = 'لینک کارت با موفقیت کپی شد! ✓';
       setTimeout(() => copyLinkText.innerText = 'کپی لینک مستقیم کارت', 2500);
     };
 
-    // 5. Universal Link Converter Engine (Spotify, YouTube, SoundCloud)
+    // ----------------------------------------------------
+    // Universal Link Converter & Dispatcher
+    // ----------------------------------------------------
     convertLinkBtn.addEventListener('click', () => convertMusicLink(linkConvertInput.value.trim()));
     linkConvertInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') convertMusicLink(linkConvertInput.value.trim());
@@ -475,91 +600,153 @@
       if (!url) return;
       convertSpinner.classList.remove('hidden');
       convertStatus.classList.remove('hidden');
-      convertStatus.innerText = 'در حال تحلیل متادیتا و تبدیل لینک...';
+      convertStatus.innerText = 'در حال تحلیل متادیتا و آماده‌سازی موتور پخش...';
+
+      stopAllEngines();
 
       try {
-        // A. SPOTIFY
-        if (url.includes('spotify.com')) {
-          const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`);
-          if (!res.ok) throw new Error('خطا در دریافت اطلاعات اسپاتیفای');
-          const data = await res.json();
-          
-          updateCardData(data.title || 'قطعه اسپاتیفای', 'Spotify Official Track', data.thumbnail_url, 'اسپاتیفای • استودیو', url);
-          // Load preview or high-quality audio
-          audio.src = 'pure_love.mp3';
-          audio.load();
-          togglePlay();
+        // 1. YOUTUBE (Full audio playback via YouTube Engine)
+        const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+        if (ytMatch) {
+          const vid = ytMatch[1];
+          let title = 'YouTube Track';
+          let author = 'YouTube Artist';
+          let thumb = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
 
-          convertStatus.innerText = 'کارت با موفقیت تبدیل و آماده اشتراک شد! ✓';
+          try {
+            const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vid}`);
+            if (res.ok) {
+              const d = await res.json();
+              title = d.title || title;
+              author = d.author_name || author;
+              thumb = d.thumbnail_url || thumb;
+            }
+          } catch (_) {}
+
+          currentEngine = 'youtube';
+          playerEngineBadge.innerText = 'YOUTUBE AUDIO ENGINE';
+          updateCardVisuals(title, author, thumb, 'یوتیوب • کیفیت HD', url);
+
+          // Load track into YouTube player
+          if (ytPlayer && ytPlayerReady && typeof ytPlayer.loadVideoById === 'function') {
+            ytPlayer.loadVideoById(vid);
+          } else {
+            document.getElementById('hiddenYtPlayer').innerHTML = `<iframe id="ytIframe" width="1" height="1" src="https://www.youtube-nocookie.com/embed/${vid}?enablejsapi=1&autoplay=1&playsinline=1" allow="autoplay"></iframe>`;
+            ytPlayer = new YT.Player('ytIframe', { events: { 'onStateChange': onYtStateChange } });
+            ytPlayerReady = true;
+          }
+
+          convertStatus.innerText = '✓ کارت با موفقیت تبدیل شد و موزیک آماده پخش است!';
           convertSpinner.classList.add('hidden');
           return;
         }
 
-        // B. SOUNDCLOUD
+        // 2. SOUNDCLOUD (Full audio playback via SoundCloud Widget)
         if (url.includes('soundcloud.com')) {
           const res = await fetch(`https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`);
           if (!res.ok) throw new Error('خطا در دریافت اطلاعات ساندکلاد');
           const data = await res.json();
 
-          updateCardData(data.title || 'SoundCloud Track', data.author_name || 'SoundCloud Artist', data.thumbnail_url, 'ساندکلاد • Lossless', url);
-          audio.src = 'pure_love.mp3';
-          audio.load();
-          togglePlay();
+          currentEngine = 'soundcloud';
+          playerEngineBadge.innerText = 'SOUNDCLOUD AUDIO ENGINE';
+          updateCardVisuals(data.title || 'SoundCloud Track', data.author_name || 'SoundCloud Artist', data.thumbnail_url, 'ساندکلاد • Lossless', url);
 
-          convertStatus.innerText = 'کارت با موفقیت از ساندکلاد تبدیل شد! ✓';
+          // Embed SoundCloud Widget
+          const scContainer = document.getElementById('hiddenScPlayer');
+          scContainer.innerHTML = `<iframe id="scIframe" width="1" height="1" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&auto_play=true"></iframe>`;
+          scWidget = SC.Widget('scIframe');
+          
+          scWidget.bind(SC.Widget.Events.READY, () => {
+            scWidget.play();
+            updatePlayUI(true);
+            incrementPlayCount();
+          });
+
+          scWidget.bind(SC.Widget.Events.PLAY, () => {
+            isPlaying = true;
+            updatePlayUI(true);
+          });
+
+          scWidget.bind(SC.Widget.Events.PAUSE, () => {
+            isPlaying = false;
+            updatePlayUI(false);
+          });
+
+          scWidget.bind(SC.Widget.Events.PLAY_PROGRESS, (progress) => {
+            const cur = progress.currentPosition / 1000;
+            const dur = progress.relativePosition > 0 ? (cur / progress.relativePosition) : 30;
+            seekSlider.value = progress.relativePosition * 100;
+            progressBar.style.width = (progress.relativePosition * 100) + '%';
+            currentTimeEl.innerText = formatTime(cur);
+            totalDurationEl.innerText = formatTime(dur);
+          });
+
+          convertStatus.innerText = '✓ کارت با موفقیت از ساندکلاد تبدیل شد و در حال پخش است!';
           convertSpinner.classList.add('hidden');
           return;
         }
 
-        // C. YOUTUBE / YOUTUBE MUSIC
-        if (url.includes('youtube.com') || url.includes('youtu.be')) {
-          const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(url)}`);
-          if (!res.ok) throw new Error('خطا در دریافت اطلاعات یوتیوب');
+        // 3. SPOTIFY
+        if (url.includes('spotify.com')) {
+          const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`);
+          if (!res.ok) throw new Error('خطا در دریافت اطلاعات اسپاتیفای');
           const data = await res.json();
 
-          updateCardData(data.title || 'YouTube Track', data.author_name || 'YouTube Music', data.thumbnail_url, 'کیفیت بالا • HD Audio', url);
-          audio.src = 'pure_love.mp3';
-          audio.load();
-          togglePlay();
+          currentEngine = 'native';
+          playerEngineBadge.innerText = 'SPOTIFY CARD';
+          updateCardVisuals(data.title || 'Spotify Track', 'Spotify Official', data.thumbnail_url, 'اسپاتیفای • استودیو', url);
 
-          convertStatus.innerText = 'کارت با موفقیت از یوتیوب تبدیل شد! ✓';
+          // Native fallback preview
+          nativeAudio.src = 'pure_love.mp3';
+          nativeAudio.load();
+          toggleMasterPlay();
+
+          convertStatus.innerText = '✓ کارت اسپاتیفای ساخته شد و آماده اشتراک است!';
           convertSpinner.classList.add('hidden');
           return;
         }
 
-        throw new Error('فرمت لینک ناشناخته است. لطفاً لینک اسپاتیفای، یوتیوب یا ساندکلاد وارد کنید.');
+        throw new Error('فرمت لینک ناشناخته است. لطفاً لینک یوتیوب، ساندکلاد یا اسپاتیفای وارد کنید.');
       } catch (err) {
         convertSpinner.classList.add('hidden');
         convertStatus.innerText = err.message || 'خطا در تبدیل لینک';
       }
     }
 
-    // 6. Direct File Upload & ObjectURL
+    // Direct Local File Upload
     localAudioFile.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
+        stopAllEngines();
+        currentEngine = 'native';
+        playerEngineBadge.innerText = 'LOCAL AUDIO ENGINE';
+        
         const fileUrl = URL.createObjectURL(file);
-        audio.src = fileUrl;
-        audio.load();
+        nativeAudio.src = fileUrl;
+        nativeAudio.load();
 
         const cleanName = file.name.replace(/\.[^/.]+$/, '');
-        updateCardData(cleanName, 'فایل صوتی بارگذاری‌شده', 'cover.jpg', 'آپلود کاربر • نیتیو');
-        togglePlay();
+        updateCardVisuals(cleanName, 'فایل صوتی بارگذاری‌شده', 'cover.jpg', 'آپلود کاربر • استودیو');
+        toggleMasterPlay();
       }
     });
 
-    // 7. Direct Audio URL
+    // Direct Audio Stream URL
     loadDirectBtn.addEventListener('click', () => {
       const url = directAudioUrl.value.trim();
       if (url) {
-        audio.src = url;
-        audio.load();
-        updateCardData('پخش زنده مستقیم', 'منبع صوتی سفارشی', 'cover.jpg', 'استریم آنلاین');
-        togglePlay();
+        stopAllEngines();
+        currentEngine = 'native';
+        playerEngineBadge.innerText = 'DIRECT AUDIO STREAM';
+
+        nativeAudio.src = url;
+        nativeAudio.load();
+        updateCardVisuals('استریم صوتی آنلاین', 'منبع مستقیم MP3', 'cover.jpg', 'استریم آنلاین');
+        toggleMasterPlay();
       }
     });
 
-    // 8. Auto-load from URL Query Params (?url=...)
+    // Auto-load on deep-link (?url=...)
     window.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       const urlParam = params.get('url');
