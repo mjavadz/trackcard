@@ -389,11 +389,44 @@
       if (event.data === YT.PlayerState.PLAYING) {
         isPlaying = true;
         updatePlayUI(true);
+        if (ytPlayer && typeof ytPlayer.getDuration === 'function') {
+          const dur = ytPlayer.getDuration();
+          if (dur > 0) totalDurationEl.innerText = formatTime(dur);
+        }
         startProgressLoop();
       } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
         isPlaying = false;
         updatePlayUI(false);
         stopProgressLoop();
+      }
+    }
+
+    function loadYouTubeEngine(vid) {
+      currentEngine = 'youtube';
+      stopAllEngines('youtube');
+
+      if (ytPlayer && ytPlayerReady && typeof ytPlayer.loadVideoById === 'function') {
+        ytPlayer.loadVideoById(vid);
+        ytPlayer.playVideo();
+      } else {
+        const cont = document.getElementById('hiddenYtPlayer');
+        cont.innerHTML = '<div id="ytDivTarget"></div>';
+        ytPlayer = new YT.Player('ytDivTarget', {
+          height: '1',
+          width: '1',
+          videoId: vid,
+          playerVars: { autoplay: 1, playsinline: 1, controls: 0 },
+          events: {
+            'onReady': () => {
+              ytPlayerReady = true;
+              ytPlayer.playVideo();
+              const dur = ytPlayer.getDuration();
+              if (dur > 0) totalDurationEl.innerText = formatTime(dur);
+              startProgressLoop();
+            },
+            'onStateChange': onYtStateChange
+          }
+        });
       }
     }
 
@@ -627,14 +660,8 @@
           playerEngineBadge.innerText = 'YOUTUBE AUDIO ENGINE';
           updateCardVisuals(title, author, thumb, 'یوتیوب • کیفیت HD', url);
 
-          // Load track into YouTube player
-          if (ytPlayer && ytPlayerReady && typeof ytPlayer.loadVideoById === 'function') {
-            ytPlayer.loadVideoById(vid);
-          } else {
-            document.getElementById('hiddenYtPlayer').innerHTML = `<iframe id="ytIframe" width="1" height="1" src="https://www.youtube-nocookie.com/embed/${vid}?enablejsapi=1&autoplay=1&playsinline=1" allow="autoplay"></iframe>`;
-            ytPlayer = new YT.Player('ytIframe', { events: { 'onStateChange': onYtStateChange } });
-            ytPlayerReady = true;
-          }
+          // Load track into YouTube audio engine
+          loadYouTubeEngine(vid);
 
           convertStatus.innerText = '✓ کارت با موفقیت تبدیل شد و موزیک آماده پخش است!';
           convertSpinner.classList.add('hidden');
@@ -723,13 +750,7 @@
 
           // Stream the actual 100% full-length song in background audio engine
           const vid = resolved.id || '1l4uBwr1kbE';
-          if (ytPlayer && ytPlayerReady && typeof ytPlayer.loadVideoById === 'function') {
-            ytPlayer.loadVideoById(vid);
-          } else {
-            document.getElementById('hiddenYtPlayer').innerHTML = `<iframe id="ytIframe" width="1" height="1" src="https://www.youtube-nocookie.com/embed/${vid}?enablejsapi=1&autoplay=1&playsinline=1" allow="autoplay"></iframe>`;
-            ytPlayer = new YT.Player('ytIframe', { events: { 'onStateChange': onYtStateChange } });
-            ytPlayerReady = true;
-          }
+          loadYouTubeEngine(vid);
 
           convertStatus.innerText = '✓ کارت اسپاتیفای ساخته شد و نسخه کامل در حال پخش است!';
           convertSpinner.classList.add('hidden');
