@@ -177,8 +177,8 @@
 
       <!-- Track Information -->
       <div class="w-full text-center mb-5 z-10">
-        <h1 id="trackTitle" class="text-xl sm:text-2xl font-black text-white mb-1.5 truncate px-2">Pure Love</h1>
-        <p id="trackArtist" class="text-sm font-medium text-slate-400 truncate">Reasonandu, Logical Elements</p>
+        <h1 id="trackTitle" class="text-xl sm:text-2xl font-black text-white mb-1.5 truncate px-2" dir="auto">Pure Love</h1>
+        <p id="trackArtist" class="text-sm font-medium text-slate-400 truncate" dir="auto">Reasonandu, Logical Elements</p>
       </div>
 
       <!-- Dynamic Waveform Visualizer -->
@@ -198,8 +198,8 @@
         </div>
       </div>
 
-      <!-- Playback Controls -->
-      <div class="flex items-center justify-center gap-6 mb-7 z-10">
+      <!-- Playback Controls (Strictly LTR: Rewind on Left, Play Center, Forward Right) -->
+      <div class="flex items-center justify-center gap-6 mb-7 z-10" dir="ltr">
         <!-- Rewind 10s -->
         <button id="prevBtn" class="text-slate-400 hover:text-white transition-colors p-2 active:scale-90" title="۱۰ ثانیه عقب">
           <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
