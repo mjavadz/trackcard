@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ track.title }} — {{ track.artist }} | TrackCard</title>
+
+  <!-- OpenGraph Metadata -->
+  <meta property="og:type" content="music.song">
+  <meta property="og:title" content="{{ track.title }} — {{ track.artist }}">
+  <meta property="og:description" content="گوش دادن آنلاین به قطعه {{ track.title }} اثر {{ track.artist }} در TrackCard • {{ track.stats.total_plays }} بار شنیده شده">
+  <meta property="og:image" content="{{ track.cover_url }}">
+  <meta property="og:url" content="{{ share_url }}">
+  <meta property="og:audio" content="{{ audio_stream_url }}">
+  <meta property="og:audio:type" content="audio/mpeg">
+
+  <!-- Twitter Player Card Metadata -->
+  <meta name="twitter:card" content="player">
+  <meta name="twitter:site" content="@TrackCard">
+  <meta name="twitter:title" content="{{ track.title }} — {{ track.artist }}">
+  <meta name="twitter:description" content="🔥 {{ track.stats.total_plays }} بار در توییتر شنیده شد • اثر {{ track.artist }}">
+  <meta name="twitter:image" content="{{ track.cover_url }}">
+  <meta name="twitter:player" content="{{ embed_url }}">
+  <meta name="twitter:player:width" content="500">
+  <meta name="twitter:player:height" content="500">
+  <meta name="twitter:player:stream" content="{{ audio_stream_url }}">
+  <meta name="twitter:player:stream:content_type" content="audio/mp4">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#1DB954',
+            darkBg: '#0B0D11',
+            cardBg: '#13171F',
+            borderSubtle: '#222834'
+          },
+          fontFamily: {
+            sans: ['Vazirmatn', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>body { font-family: 'Vazirmatn', sans-serif; }</style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md bg-cardBg border border-borderSubtle rounded-3xl p-6 shadow-2xl space-y-6">
+    
+    <!-- Top Info -->
+    <div class="flex items-center justify-between border-b border-borderSubtle pb-4">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🎵</span>
+        <span class="font-extrabold text-sm text-white">TrackCard Player</span>
+      </div>
+      
+      <!-- Live Play Badge -->
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold shadow-sm">
+        <span>🔥</span>
+        <span id="playCounter">{{ track.stats.total_plays }}</span>
+        <span>پلی</span>
+      </div>
+    </div>
+
+    <!-- Center: Cover Art with Overlay Play Button -->
+    <div class="relative group rounded-2xl overflow-hidden shadow-2xl aspect-square bg-slate-900 border border-borderSubtle">
+      <img src="{{ track.cover_url }}" alt="{{ track.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+        <button id="mainPlayBtn" class="w-20 h-20 rounded-full bg-brand hover:bg-emerald-400 text-black flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all">
+          <span id="mainPlayIcon" class="text-3xl pl-1 font-black">▶</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Title and Artist -->
+    <div class="text-center space-y-1">
+      <h1 class="text-xl font-black text-white truncate">{{ track.title }}</h1>
+      <p class="text-sm text-slate-400 truncate">{{ track.artist }}</p>
+      {% if track.album %}
+      <p class="text-xs text-slate-500 truncate">{{ track.album }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="space-y-1.5 bg-darkBg/60 p-3 rounded-2xl border border-borderSubtle">
+      <audio id="audioElement" src="{{ audio_stream_url }}" preload="metadata"></audio>
+      <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden cursor-pointer" id="progressContainer">
+        <div id="progressBar" class="bg-brand h-full w-0 rounded-full transition-all"></div>
+      </div>
+      <div class="flex justify-between text-xs font-mono text-slate-400" dir="ltr">
+        <span id="currentTime">0:00</span>
+        <span id="totalDuration">0:30</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="grid grid-cols-2 gap-2.5 pt-1">
+      <a href="{{ video_download_url }}" download class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-200 text-black font-extrabold text-xs text-center flex items-center justify-center gap-1.5 transition-all shadow-sm">
+        <span>دانلود ویدیو توییتر</span>
+        <span>📥</span>
+      </a>
+      <a href="{{ track.spotify_url }}" target="_blank" class="py-2.5 px-3 rounded-xl bg-cardBg hover:bg-slate-800 border border-borderSubtle text-brand font-bold text-xs text-center flex items-center justify-center gap-1.5 transition-all">
+        <span>پخش در اسپاتیفای</span>
+        <span>➔</span>
+      </a>
+    </div>
+
+    <div class="text-center">
+      <a href="/" class="text-[11px] text-slate-500 hover:text-slate-400 transition-colors">
+        ساخته شده با TrackCard — ساخت کارت موزیک برای توییتر
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    const trackId = "{{ track.id }}";
+    const audio = document.getElementById('audioElement');
+    const playBtn = document.getElementById('mainPlayBtn');
+    const playIcon = document.getElementById('mainPlayIcon');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalDurationEl = document.getElementById('totalDuration');
+    const playCounterEl = document.getElementById('playCounter');
+
+    let isRecorded = false;
+
+    playBtn.addEventListener('click', togglePlay);
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play();
+        playIcon.textContent = '❚❚';
+        if (!isRecorded) {
+          recordPlay();
+          isRecorded = true;
+        }
+      } else {
+        audio.pause();
+        playIcon.textContent = '▶';
+      }
+    }
+
+    function recordPlay() {
+      fetch(`/api/track/${trackId}/play`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          if (data.total_plays) {
+            playCounterEl.textContent = data.total_plays.toLocaleString('fa-IR');
+          }
+        })
+        .catch(console.error);
+    }
+
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      progressBar.style.width = pct + '%';
+      currentTimeEl.textContent = formatTime(audio.currentTime);
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      totalDurationEl.textContent = formatTime(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      playIcon.textContent = '▶';
+      progressBar.style.width = '0%';
+    });
+
+    progressContainer.addEventListener('click', (e) => {
+      const rect = progressContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = clickX / rect.width;
+      audio.currentTime = pct * audio.duration;
+    });
+
+    function formatTime(sec) {
+      if (isNaN(sec)) return '0:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+data/media/*.mp4
+data/media/*.mp3
+data/media/*.jpg
+data/trackcard.sqlite*
+data/test*.sqlite*
+.DS_Store

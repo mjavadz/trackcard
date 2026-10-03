@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  trackcard:
+    build: .
+    container_name: trackcard
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=8787
+      - HOST=0.0.0.0
+      - BASE_URL=https://javadnode.top

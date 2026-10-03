@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrackCard — تبدیل موزیک اسپاتیفای به کارت پخش توییتری</title>
+  <meta name="description" content="تبدیل لینک‌های اسپاتیفای به کارت‌های ویدیویی قابل پخش در تایم‌لاین توییتر به همراه شمارنده ریل‌تایم پلی">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#1DB954',
+            darkBg: '#0B0D11',
+            cardBg: '#13171F',
+            borderSubtle: '#222834'
+          },
+          fontFamily: {
+            sans: ['Vazirmatn', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Vazirmatn', sans-serif; }
+    .waveform-bar { transition: height 0.08s ease; }
+  </style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col justify-between selection:bg-brand selection:text-black">
+
+  <!-- Header -->
+  <header class="border-b border-borderSubtle bg-darkBg/80 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-brand/20 border border-brand/40 flex items-center justify-center text-brand font-black text-lg">
+          🎵
+        </div>
+        <div>
+          <span class="font-extrabold text-lg tracking-tight text-white">TrackCard</span>
+          <span class="text-[10px] text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-full font-bold mr-2">نسخه بتا</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="https://github.com/mjavadz/trackcard" target="_blank" class="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-borderSubtle hover:bg-cardBg">
+          <span>GitHub</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Hero Section -->
+  <main class="max-w-3xl mx-auto px-4 py-10 w-full flex-1">
+    
+    <div class="text-center space-y-3 mb-8">
+      <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+        پخش مستقیم موزیک اسپاتیفای در <span class="text-brand">توییتر</span>
+      </h1>
+      <p class="text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+        لینک آهنگ را وارد کنید؛ کارت ویدیویی متحرک با ویژوالایزر برای پخش بدون خروج از تایم‌لاین و صفحه وب با شمارنده لحظه‌ای پلی دریافت کنید.
+      </p>
+    </div>
+
+    <!-- Input Form -->
+    <div class="bg-cardBg border border-borderSubtle rounded-2xl p-4 sm:p-5 shadow-2xl mb-8">
+      <form id="generateForm" class="space-y-3">
+        <label for="spotifyUrl" class="block text-xs font-bold text-slate-300">لینک آهنگ در اسپاتیفای (Spotify Track Link):</label>
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <input 
+            type="url" 
+            id="spotifyUrl" 
+            placeholder="https://open.spotify.com/track/5Fd3Grb3DN9bD6Qw46BjSO..." 
+            value="https://open.spotify.com/track/5Fd3Grb3DN9bD6Qw46BjSO" 
+            required 
+            class="flex-1 px-4 py-3 rounded-xl bg-darkBg border border-borderSubtle text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand transition-colors text-left"
+            dir="ltr"
+          />
+          <button 
+            type="submit" 
+            id="submitBtn" 
+            class="px-6 py-3 rounded-xl bg-brand hover:bg-emerald-500 text-black font-extrabold text-sm transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
+          >
+            <span id="btnText">ساخت کارت توییتری</span>
+            <span id="btnSpinner" class="hidden animate-spin">⏳</span>
+          </button>
+        </div>
+      </form>
+      <div id="errorMessage" class="hidden mt-3 p-3 rounded-xl bg-red-950/40 border border-red-800/50 text-red-300 text-xs text-right"></div>
+    </div>
+
+    <!-- Result Card -->
+    <div id="resultCard" class="hidden bg-cardBg border border-borderSubtle rounded-3xl p-5 sm:p-6 shadow-2xl space-y-6">
+      
+      <!-- Track Meta Header -->
+      <div class="flex items-center justify-between border-b border-borderSubtle pb-4">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <img id="trackCover" src="" alt="Cover" class="w-16 h-16 rounded-xl object-cover border border-borderSubtle shadow-md shrink-0">
+          <div class="min-w-0">
+            <h2 id="trackTitle" class="text-lg font-black text-white truncate"></h2>
+            <p id="trackArtist" class="text-xs text-slate-400 truncate mt-0.5"></p>
+            <p id="trackAlbum" class="text-[11px] text-slate-500 truncate mt-0.5"></p>
+          </div>
+        </div>
+
+        <!-- Live Play Counter Badge -->
+        <div class="text-left shrink-0 pl-1">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/25 text-orange-400 text-xs font-bold shadow-sm">
+            <span>🔥</span>
+            <span id="playCounter">۰</span>
+            <span>پلی</span>
+          </div>
+          <span class="block text-[10px] text-slate-500 text-center mt-1">شمارش لحظه‌ای</span>
+        </div>
+      </div>
+
+      <!-- Built-in Audio Player -->
+      <div class="bg-darkBg/60 border border-borderSubtle rounded-2xl p-4 space-y-3">
+        <audio id="audioElement" preload="metadata" class="hidden"></audio>
+        
+        <div class="flex items-center justify-between gap-4">
+          <button id="playPauseBtn" class="w-12 h-12 rounded-full bg-brand text-black flex items-center justify-center font-black shadow-lg hover:scale-105 active:scale-95 transition-all shrink-0">
+            <span id="playIcon" class="text-xl pl-0.5">▶</span>
+          </button>
+          
+          <!-- Progress bar -->
+          <div class="flex-1 space-y-1">
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden cursor-pointer" id="progressContainer">
+              <div id="progressBar" class="bg-brand h-full w-0 rounded-full transition-all"></div>
+            </div>
+            <div class="flex justify-between text-[11px] font-mono text-slate-400" dir="ltr">
+              <span id="currentTime">0:00</span>
+              <span id="totalDuration">0:30</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        
+        <!-- Download Twitter Video MP4 (Guaranteed timeline auto-play) -->
+        <a id="downloadVideoBtn" href="#" download class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-white hover:bg-slate-200 text-black font-extrabold text-xs transition-all shadow-md group">
+          <span>دانلود ویدیوی آمادهٔ توییتر (MP4)</span>
+          <span class="group-hover:translate-y-0.5 transition-transform">📥</span>
+        </a>
+
+        <!-- Copy Share Link with Player Card -->
+        <button id="copyShareBtn" class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-cardBg hover:bg-slate-800 border border-borderSubtle text-white font-bold text-xs transition-all">
+          <span>کپی لینک اختصاصی کارت پلیر</span>
+          <span>🔗</span>
+        </button>
+
+      </div>
+
+      <div class="text-[11px] text-slate-400 bg-white/[0.02] border border-white/[0.04] p-3 rounded-xl flex items-center justify-between">
+        <span>توصیه: ویدیوی MP4 در تایم‌لاین تمام کاربران (موبایل و وب) به صورت خودکار با صدا و تصویر پخش می‌شود.</span>
+        <a id="spotifyDirectLink" href="#" target="_blank" class="text-brand hover:underline font-bold mr-2 shrink-0">باز کردن در اسپاتیفای ➔</a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-borderSubtle py-4 text-center text-xs text-slate-500">
+    <p>TrackCard — سرویس بهینه‌سازی اشتراک موسیقی در توییتر و وب</p>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
