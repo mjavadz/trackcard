@@ -375,38 +375,38 @@
     }
 
     function startVisualizer() {
-      if (visualizerAnimId) return;
+      stopVisualizer();
       let t = 0;
+      const bars = document.querySelectorAll('.wave-bar');
 
-      function renderFrame() {
-        t += 0.18;
-        for (let i = 0; i < barCount; i++) {
-          const bass = Math.sin(t * 1.6 + i * 0.25) * 30;
-          const mid = Math.cos(t * 2.2 - i * 0.35) * 35;
-          const treble = Math.sin(t * 3.4 + i * 0.6) * 22;
-          const jitter = (Math.random() - 0.5) * 25;
+      visualizerAnimId = setInterval(() => {
+        t += 0.22;
+        for (let i = 0; i < bars.length; i++) {
+          const bass = Math.sin(t * 1.5 + i * 0.22) * 28;
+          const mid = Math.cos(t * 2.1 - i * 0.32) * 32;
+          const treble = Math.sin(t * 3.3 + i * 0.55) * 20;
+          const jitter = (Math.random() - 0.5) * 22;
 
-          const envelope = Math.sin((i / barCount) * Math.PI) * 0.6 + 0.4;
-          let h = (42 + bass + mid + treble + jitter) * envelope;
+          const envelope = Math.sin((i / bars.length) * Math.PI) * 0.6 + 0.4;
+          let h = (40 + bass + mid + treble + jitter) * envelope;
           h = Math.max(14, Math.min(96, h));
 
-          waveBars[i].style.height = `${h.toFixed(1)}%`;
-          waveBars[i].style.opacity = (h / 100 * 0.5 + 0.5).toFixed(2);
+          bars[i].style.height = `${h.toFixed(0)}%`;
+          bars[i].style.opacity = (h / 100 * 0.5 + 0.5).toFixed(2);
         }
-        visualizerAnimId = requestAnimationFrame(renderFrame);
-      }
-      visualizerAnimId = requestAnimationFrame(renderFrame);
+      }, 45);
     }
 
     function stopVisualizer() {
       if (visualizerAnimId) {
-        cancelAnimationFrame(visualizerAnimId);
+        clearInterval(visualizerAnimId);
         visualizerAnimId = null;
       }
-      for (let i = 0; i < barCount; i++) {
-        const h = Math.sin((i / barCount) * Math.PI) * 45 + 18;
-        waveBars[i].style.height = `${h}%`;
-        waveBars[i].style.opacity = '0.7';
+      const bars = document.querySelectorAll('.wave-bar');
+      for (let i = 0; i < bars.length; i++) {
+        const h = Math.sin((i / bars.length) * Math.PI) * 45 + 18;
+        bars[i].style.height = `${h}%`;
+        bars[i].style.opacity = '0.7';
       }
     }
 
