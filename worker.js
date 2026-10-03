@@ -1,5 +1,5 @@
 /**
- * TrackCard Edge Worker
+ * XPlay Edge Worker
  * Serverless Music Player Card for Twitter & Web
  * Runs 100% on Cloudflare Edge (0 VPS resources)
  */
@@ -270,7 +270,7 @@ async function getPlayCount(id) {
 // ----------------------------------------------------
 
 async function renderTwitterCardPage(id, origin) {
-  let title = 'موزیک در TrackCard';
+  let title = 'موزیک در XPlay';
   let artist = 'هنرمند';
   let thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
@@ -293,11 +293,11 @@ async function renderTwitterCardPage(id, origin) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)} — ${escapeHtml(artist)} | TrackCard</title>
+  <title>${escapeHtml(title)} — ${escapeHtml(artist)} | XPlay</title>
 
   <!-- Twitter Player Card Meta Tags -->
   <meta name="twitter:card" content="player">
-  <meta name="twitter:site" content="@TrackCard">
+  <meta name="twitter:site" content="@XPlay">
   <meta name="twitter:title" content="${escapeHtml(title)} — ${escapeHtml(artist)}">
   <meta name="twitter:description" content="▶️ پخش کامل و مستقیم این قطعه در توییتر • ${plays} بار شنیده شد">
   <meta name="twitter:image" content="${thumbnail}">
@@ -308,7 +308,7 @@ async function renderTwitterCardPage(id, origin) {
   <!-- OpenGraph -->
   <meta property="og:type" content="music.song">
   <meta property="og:title" content="${escapeHtml(title)}">
-  <meta property="og:description" content="${escapeHtml(artist)} • پخش آنلاین در TrackCard">
+  <meta property="og:description" content="${escapeHtml(artist)} • پخش آنلاین در XPlay">
   <meta property="og:image" content="${thumbnail}">
   <meta property="og:url" content="${shareUrl}">
 
@@ -327,7 +327,7 @@ async function renderTwitterCardPage(id, origin) {
     <!-- Branding Header -->
     <div class="flex items-center gap-2 mb-6">
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold">TrackCard • Twitter Player</span>
+      <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold">XPlay • Twitter Player</span>
     </div>
 
     <!-- Album Cover & Frame -->
@@ -385,7 +385,7 @@ function renderEmbedPlayer(id, origin) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackCard Player</title>
+  <title>XPlay Player</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: system-ui, sans-serif; }
@@ -420,7 +420,7 @@ function renderHomePage(origin) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackCard — کارت پخش موزیک برای توییتر / X</title>
+  <title>XPlay — کارت پخش موزیک برای توییتر / X</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -442,7 +442,7 @@ function renderHomePage(origin) {
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         پخش ریل‌تایم و کامل داخل تایم‌لاین توییتر
       </div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">TrackCard</h1>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">XPlay</h1>
       <p class="text-slate-400 text-sm sm:text-base max-w-md mx-auto">
         لینک اسپاتیفای/یوتیوب را وارد کنید یا نام آهنگ را جستجو کنید تا کارت پخش زنده توییتر ساخته شود.
       </p>
@@ -468,7 +468,7 @@ function renderHomePage(origin) {
       <div id="resultsContainer" class="hidden flex flex-col gap-2 max-h-80 overflow-y-auto pr-1"></div>
 
       <!-- Selected Track Result Card -->
-      <div id="selectedTrackCard" class="hidden mt-6 pt-6 border-t border-white/10 flex flex-col items-center text-center">
+      <div id="selectedXPlay" class="hidden mt-6 pt-6 border-t border-white/10 flex flex-col items-center text-center">
         <div class="w-full aspect-video rounded-xl overflow-hidden mb-4 border border-white/10 shadow-lg">
           <img id="cardThumb" src="" class="w-full h-full object-cover" />
         </div>
@@ -515,14 +515,14 @@ function renderHomePage(origin) {
   </main>
 
   <footer class="text-center py-6 text-xs text-slate-500 border-t border-white/5">
-    TrackCard • Serverless Twitter Music Player
+    XPlay • Serverless Twitter Music Player
   </footer>
 
   <script>
     const searchInput = document.getElementById('searchInput');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const resultsContainer = document.getElementById('resultsContainer');
-    const selectedTrackCard = document.getElementById('selectedTrackCard');
+    const selectedXPlay = document.getElementById('selectedXPlay');
     const cardThumb = document.getElementById('cardThumb');
     const cardTitle = document.getElementById('cardTitle');
     const cardArtist = document.getElementById('cardArtist');
@@ -606,7 +606,7 @@ function renderHomePage(origin) {
 
     function selectTrack(track) {
       resultsContainer.classList.add('hidden');
-      selectedTrackCard.classList.remove('hidden');
+      selectedXPlay.classList.remove('hidden');
       cardThumb.src = track.thumbnail;
       cardTitle.innerText = track.title;
       cardArtist.innerText = track.artist || '';
