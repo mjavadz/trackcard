@@ -96,15 +96,8 @@
       width: 3px;
       border-radius: 9999px;
       background: var(--spotify-green);
-      transition: height 0.12s ease;
-      opacity: 0.85;
-    }
-    .playing .wave-bar {
-      animation: pulseWave 1.2s infinite ease-in-out alternate;
-    }
-    @keyframes pulseWave {
-      0% { height: 15%; opacity: 0.4; }
-      100% { height: 95%; opacity: 1; }
+      transition: height 0.08s ease, opacity 0.08s ease;
+      opacity: 0.7;
     }
   </style>
 </head>
@@ -193,13 +186,13 @@
         <!-- 32 bars generated dynamically via JS -->
       </div>
 
-      <!-- Scrubbing Timeline & Duration -->
-      <div class="w-full mb-6 z-10 px-1">
-        <div class="relative flex items-center">
-          <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.1" class="w-full relative z-20">
-          <div id="progressBar" class="absolute left-0 top-[8px] h-[5px] rounded-full bg-emerald-500 pointer-events-none z-10" style="width: 0%;"></div>
+      <!-- Scrubbing Timeline & Duration (Strictly Left-to-Right) -->
+      <div class="w-full mb-6 z-10 px-1" dir="ltr">
+        <div class="relative flex items-center w-full">
+          <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.1" class="w-full relative z-20" style="direction: ltr;">
+          <div id="progressBar" class="absolute left-0 top-[8px] h-[5px] rounded-full bg-emerald-500 pointer-events-none z-10" style="width: 0%; left: 0;"></div>
         </div>
-        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mt-2 px-0.5">
+        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mt-2 px-0.5" style="direction: ltr;">
           <span id="currentTime">00:00</span>
           <span id="totalDuration">--:--</span>
         </div>
@@ -367,15 +360,54 @@
     const directAudioUrl = document.getElementById('directAudioUrl');
     const loadDirectBtn = document.getElementById('loadDirectBtn');
 
-    // Build 32 Waveform Bars
+    // Dynamic Equalizer Spectrum Engine
+    let visualizerAnimId = null;
+    const waveBars = [];
     const barCount = 32;
+
     for (let i = 0; i < barCount; i++) {
       const bar = document.createElement('div');
       bar.className = 'wave-bar';
-      const h = Math.sin((i / barCount) * Math.PI) * 75 + 15;
+      const h = Math.sin((i / barCount) * Math.PI) * 45 + 18;
       bar.style.height = `${h}%`;
-      bar.style.animationDelay = `${(i * 0.05).toFixed(2)}s`;
       waveform.appendChild(bar);
+      waveBars.push(bar);
+    }
+
+    function startVisualizer() {
+      if (visualizerAnimId) return;
+      let t = 0;
+
+      function renderFrame() {
+        t += 0.18;
+        for (let i = 0; i < barCount; i++) {
+          const bass = Math.sin(t * 1.6 + i * 0.25) * 30;
+          const mid = Math.cos(t * 2.2 - i * 0.35) * 35;
+          const treble = Math.sin(t * 3.4 + i * 0.6) * 22;
+          const jitter = (Math.random() - 0.5) * 25;
+
+          const envelope = Math.sin((i / barCount) * Math.PI) * 0.6 + 0.4;
+          let h = (42 + bass + mid + treble + jitter) * envelope;
+          h = Math.max(14, Math.min(96, h));
+
+          waveBars[i].style.height = `${h.toFixed(1)}%`;
+          waveBars[i].style.opacity = (h / 100 * 0.5 + 0.5).toFixed(2);
+        }
+        visualizerAnimId = requestAnimationFrame(renderFrame);
+      }
+      visualizerAnimId = requestAnimationFrame(renderFrame);
+    }
+
+    function stopVisualizer() {
+      if (visualizerAnimId) {
+        cancelAnimationFrame(visualizerAnimId);
+        visualizerAnimId = null;
+      }
+      for (let i = 0; i < barCount; i++) {
+        const h = Math.sin((i / barCount) * Math.PI) * 45 + 18;
+        waveBars[i].style.height = `${h}%`;
+        waveBars[i].style.opacity = '0.7';
+      }
     }
 
     // ----------------------------------------------------
@@ -467,12 +499,12 @@
         playIcon.classList.add('hidden');
         pauseIcon.classList.remove('hidden');
         coverOverlayPlay.classList.add('opacity-0', 'pointer-events-none');
-        waveform.classList.add('playing');
+        startVisualizer();
       } else {
         playIcon.classList.remove('hidden');
         pauseIcon.classList.add('hidden');
         coverOverlayPlay.classList.remove('opacity-0', 'pointer-events-none');
-        waveform.classList.remove('playing');
+        stopVisualizer();
       }
     }
 
@@ -579,8 +611,8 @@
         ambientBackdrop.style.backgroundImage = `url('${coverUrl}')`;
       }
 
-      // If we have trackId, share via dynamic edge link so Twitter displays REAL cover!
-      const shareUrl = trackId ? `https://xplay.javadnode.top/t/${trackId}` : (shareParam ? `${window.location.origin}${window.location.pathname}?url=${encodeURIComponent(shareParam)}` : window.location.href);
+      // Clean share URL strictly on GitHub Pages domain
+      const shareUrl = shareParam ? `https://xplay-app.github.io/?url=${encodeURIComponent(shareParam)}` : (trackId ? `https://xplay-app.github.io/?v=${encodeURIComponent(trackId)}` : `https://xplay-app.github.io/`);
       tweetBtn.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(`${title} — ${artist} 🎧✨\n${shareUrl}`);
       
       copyLinkBtn.onclick = () => {
