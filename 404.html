@@ -663,9 +663,8 @@
         ambientBackdrop.style.backgroundImage = `url('${coverUrl}')`;
       }
 
-      // Share URL for Twitter: use Worker domain so Twitterbot sees DYNAMIC meta tags (real cover/title)
-      // When clicked, the Worker page redirects to GitHub Pages for actual playback
-      const shareUrl = trackId ? `https://xplay.javadnode.top/t/${trackId}` : (shareParam ? `https://xplay-app.github.io/?url=${encodeURIComponent(shareParam)}` : `https://xplay-app.github.io/`);
+      // Clean share URL strictly on GitHub Pages domain (zero personal name)
+      const shareUrl = shareParam ? `https://xplay-app.github.io/?url=${encodeURIComponent(shareParam)}` : (trackId ? `https://xplay-app.github.io/?v=${encodeURIComponent(trackId)}` : `https://xplay-app.github.io/`);
       tweetBtn.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(`${title} — ${artist} 🎧✨\n${shareUrl}`);
       
       copyLinkBtn.onclick = () => {
