@@ -61,34 +61,46 @@
       box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 0, 0, 0.6);
     }
 
-    /* Range slider custom styling */
+    /* Range slider custom styling - Minimalist sleek bar without knob */
     input[type=range] {
       -webkit-appearance: none;
-      background: transparent;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 9999px;
+      height: 6px;
       cursor: pointer;
     }
     input[type=range]:focus {
       outline: none;
     }
     input[type=range]::-webkit-slider-runnable-track {
-      height: 5px;
+      height: 6px;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.15);
-      transition: background 0.2s;
+      background: transparent;
     }
+    input[type=range]::-moz-range-track {
+      height: 6px;
+      border-radius: 9999px;
+      background: transparent;
+      border: none;
+    }
+    /* Completely remove circular thumb knob */
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      height: 14px;
-      width: 14px;
-      border-radius: 50%;
-      background: #ffffff;
-      margin-top: -4.5px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-      transition: transform 0.15s, background-color 0.15s;
+      appearance: none;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      border: none;
+      background: transparent;
     }
-    input[type=range]:hover::-webkit-slider-thumb {
-      transform: scale(1.25);
-      background: var(--spotify-green);
+    input[type=range]::-moz-range-thumb {
+      appearance: none;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      border: none;
+      background: transparent;
     }
 
     /* Dynamic Waveform Visualizer Bars */
@@ -117,14 +129,14 @@
       </div>
       <div>
         <span class="text-lg font-black tracking-tight text-white block leading-none">XPlay</span>
-        <span class="text-[10px] text-slate-400 font-medium">پخش مستقیم موزیک در توییتر</span>
+        <span class="text-[10px] text-slate-400 font-medium">پخش مستقیم صوتی در توییتر</span>
       </div>
     </div>
 
     <div class="flex items-center gap-3">
       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        پخش نیتیو (بدون تبلیغات)
+        پخش صوتی سبک (حداقل مصرف حجم)
       </span>
     </div>
   </header>
@@ -188,9 +200,9 @@
 
       <!-- Scrubbing Timeline & Duration (Strictly Left-to-Right) -->
       <div class="w-full mb-6 z-10 px-1" dir="ltr">
-        <div class="relative flex items-center w-full">
-          <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.1" class="w-full relative z-20" style="direction: ltr;">
-          <div id="progressBar" class="absolute left-0 top-[8px] h-[5px] rounded-full bg-emerald-500 pointer-events-none z-10" style="width: 0%; left: 0;"></div>
+        <div class="relative flex items-center w-full h-[6px]">
+          <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.1" class="w-full relative z-20 h-[6px] m-0 p-0" style="direction: ltr;">
+          <div id="progressBar" class="absolute left-0 top-0 h-[6px] rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50 pointer-events-none z-10" style="width: 0%; left: 0;"></div>
         </div>
         <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mt-2 px-0.5" style="direction: ltr;">
           <span id="currentTime">00:00</span>
@@ -248,14 +260,14 @@
         <!-- Platform Badges -->
         <div class="flex items-center gap-1.5 text-[10px] font-bold">
           <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Spotify</span>
-          <span class="px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">YouTube</span>
           <span class="px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">SoundCloud</span>
+          <span class="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Web Audio</span>
         </div>
       </div>
 
       <div class="relative mb-3">
         <input type="text" id="linkConvertInput"
-               placeholder="لینک اسپاتیفای، یوتیوب یا ساندکلاد را پیست کنید..."
+               placeholder="لینک اسپاتیفای، ساندکلاد یا موزیک وب را پیست کنید..."
                class="w-full bg-[#161e30] border border-white/10 rounded-2xl py-3 pr-4 pl-10 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors ltr font-mono placeholder:font-sans placeholder:text-slate-500">
         <div id="convertSpinner" class="hidden absolute left-3 top-1/2 -translate-y-1/2">
           <div class="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
@@ -665,7 +677,13 @@
 
       // Dynamic origin: works seamlessly on xplay-music.pages.dev and xplay-app.github.io
       const baseUrl = window.location.origin;
-      const shareUrl = shareParam ? `${baseUrl}/?url=${encodeURIComponent(shareParam)}` : (trackId ? `${baseUrl}/?v=${encodeURIComponent(trackId)}` : baseUrl);
+      // Never expose YouTube URLs to Twitter! Use clean track ID parameter ?v=
+      let shareUrl = baseUrl;
+      if (trackId) {
+        shareUrl = `${baseUrl}/?v=${encodeURIComponent(trackId)}`;
+      } else if (shareParam && !shareParam.includes('youtube.com') && !shareParam.includes('youtu.be')) {
+        shareUrl = `${baseUrl}/?url=${encodeURIComponent(shareParam)}`;
+      }
       tweetBtn.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(`${title} — ${artist} 🎧✨\n${shareUrl}`);
       
       copyLinkBtn.onclick = () => {
@@ -691,13 +709,15 @@
       progressBar.style.width = '0%';
 
       const autoParam = autoPlay ? 1 : 0;
-      mediaSlot.innerHTML = `<iframe id="activeYtFrame" width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${vid}?autoplay=${autoParam}&enablejsapi=1&playsinline=1&controls=0" allow="autoplay; encrypted-media" style="border:none;"></iframe>`;
+      // vq=tiny forces YouTube to stream at 144p (lowest data consumption), saving up to 90% bandwidth!
+      mediaSlot.innerHTML = `<iframe id="activeYtFrame" width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${vid}?autoplay=${autoParam}&enablejsapi=1&playsinline=1&controls=0&vq=tiny&modestbranding=1" allow="autoplay; encrypted-media" style="border:none;"></iframe>`;
 
       const ifr = document.getElementById('activeYtFrame');
       if (ifr) {
         ifr.onload = () => {
           try {
             ifr.contentWindow.postMessage('{"event":"listening"}', '*');
+            ifr.contentWindow.postMessage('{"event":"command","func":"setPlaybackQuality","args":["small"]}', '*');
           } catch(_) {}
         };
       }
@@ -785,8 +805,8 @@
             throw new Error('عدم امکان تحلیل لینک اسپاتیفای');
           }
 
-          playerEngineBadge.innerText = 'SPOTIFY • FULL AUDIO';
-          updateCardVisuals(resolved.title, resolved.artist, resolved.thumbnail, 'اسپاتیفای • نسخه کامل', url, resolved.id);
+          playerEngineBadge.innerText = 'SPOTIFY • STREAM';
+          updateCardVisuals(resolved.title, resolved.artist, resolved.thumbnail, 'اسپاتیفای • مصرف بهینه دیتا', '', resolved.id);
 
           // Fetch real KV play statistics for this track
           const trackKey = 'sp_' + (url.match(/track\/([a-zA-Z0-9]+)/)?.[1] || resolved.id);
@@ -818,8 +838,8 @@
             }
           } catch (_) {}
 
-          playerEngineBadge.innerText = 'YOUTUBE AUDIO ENGINE';
-          updateCardVisuals(title, author, thumb, 'یوتیوب • کیفیت HD', url, vid);
+          playerEngineBadge.innerText = 'XPLAY • STREAM';
+          updateCardVisuals(title, author, thumb, 'استودیو • مصرف کم‌دیتا', '', vid);
 
           fetchRealPlayStats('yt_' + vid);
           startYouTubeStream(vid, 240, autoPlay);
